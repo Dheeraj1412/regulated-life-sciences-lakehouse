@@ -1,12 +1,17 @@
 from pathlib import Path
-import uuid
 from datetime import datetime, timezone
+import uuid
+import yaml
 import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 SOURCE_DIR = BASE_DIR / "data" / "source"
 BRONZE_DIR = BASE_DIR / "data" / "lakehouse" / "bronze"
 BRONZE_DIR.mkdir(parents=True, exist_ok=True)
+
+CONFIG_PATH = BASE_DIR / "config.yaml"
+with open(CONFIG_PATH) as f:
+    CONFIG = yaml.safe_load(f)
 
 INGESTION_TIMESTAMP = datetime.now(timezone.utc).isoformat()
 
@@ -19,6 +24,14 @@ SOURCE_FILES = {
     "document_metadata": "document_metadata.csv",
 }
 
+
+def check_schema_contract(df: pd.DataFrame, table_name: str) -> list:
+    """Return a list of missing required columns, empty if the schema is satisfied."""
+    required = CONFIG["tables"][table_name]["required_columns"]
+    missing = [col for col in required if col not in df.columns]
+    return missing
+
+
 def add_ingestion_metadata(df: pd.DataFrame, source_filename: str) -> pd.DataFrame:
     """Add traceability columns required for a regulated data pipeline."""
     df = df.copy()
@@ -26,6 +39,7 @@ def add_ingestion_metadata(df: pd.DataFrame, source_filename: str) -> pd.DataFra
     df["_source_file"] = source_filename
     df["_source_row_count"] = len(df)
     return df
+
 
 def ingest_file(table_name: str, filename: str) -> pd.DataFrame:
     file_path = SOURCE_DIR / filename
@@ -35,6 +49,10 @@ def ingest_file(table_name: str, filename: str) -> pd.DataFrame:
     else:
         df = pd.read_csv(file_path)
 
+    missing_columns = check_schema_contract(df, table_name)
+    if missing_columns:
+        raise ValueError(f"{table_name}: source file is missing required columns: {missing_columns}")
+
     df = add_ingestion_metadata(df, filename)
 
     output_path = BRONZE_DIR / f"{table_name}.parquet"
@@ -42,6 +60,7 @@ def ingest_file(table_name: str, filename: str) -> pd.DataFrame:
 
     print(f"  {table_name}: {len(df)} rows -> {output_path.relative_to(BASE_DIR)}")
     return df
+
 
 def main():
     run_id = str(uuid.uuid4())
@@ -92,6 +111,7 @@ def main():
 
     print(f"\nBronze ingestion run {run_id} finished with status: {overall_status}")
     print(f"Audit log updated: {audit_log_path.relative_to(BASE_DIR)}")
+
 
 if __name__ == "__main__":
     main()

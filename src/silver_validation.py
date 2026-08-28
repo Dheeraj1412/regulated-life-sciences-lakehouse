@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime, timezone
 import uuid
+import yaml
 import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -11,12 +12,15 @@ QUARANTINE_DIR = BASE_DIR / "data" / "lakehouse" / "quarantine"
 SILVER_DIR.mkdir(parents=True, exist_ok=True)
 QUARANTINE_DIR.mkdir(parents=True, exist_ok=True)
 
+CONFIG_PATH = BASE_DIR / "config.yaml"
+with open(CONFIG_PATH) as f:
+    CONFIG = yaml.safe_load(f)
+
 RUN_ID = str(uuid.uuid4())
 RUN_STARTED_AT = datetime.now(timezone.utc).isoformat()
 
 
 def is_valid_date(value) -> bool:
-    """Return True if value can be parsed as a real date, False otherwise."""
     if pd.isna(value):
         return False
     try:
@@ -26,134 +30,66 @@ def is_valid_date(value) -> bool:
         return False
 
 
-def validate_batches(df: pd.DataFrame) -> pd.DataFrame:
-    """Add a _validation_errors column listing every rule a row breaks."""
+def apply_rules(df: pd.DataFrame, table_name: str) -> pd.DataFrame:
+    """Apply every rule defined in config.yaml for this table and record failures."""
+    rules = CONFIG["tables"][table_name].get("rules", {})
     errors = pd.Series([[] for _ in range(len(df))], index=df.index)
 
-    missing_id = df["batch_id"].isna()
-    errors[missing_id] = errors[missing_id].apply(lambda e: e + ["missing batch_id"])
+    for column in rules.get("not_null", []):
+        mask = df[column].isna()
+        errors[mask] = errors[mask].apply(lambda e: e + [f"missing {column}"])
 
-    manu_valid = df["manufacture_date"].apply(is_valid_date)
-    exp_valid = df["expiry_date"].apply(is_valid_date)
-    both_valid = manu_valid & exp_valid
-    bad_dates = both_valid & (
-        pd.to_datetime(df["expiry_date"], errors="coerce")
-        <= pd.to_datetime(df["manufacture_date"], errors="coerce")
-    )
-    errors[bad_dates] = errors[bad_dates].apply(lambda e: e + ["expiry_date not after manufacture_date"])
+    for column, allowed in rules.get("allowed_values", {}).items():
+        mask = ~df[column].isin(allowed)
+        errors[mask] = errors[mask].apply(lambda e: e + [f"invalid {column} value"])
+
+    for column, bounds in rules.get("numeric_range", {}).items():
+        mask = ~df[column].between(bounds["min"], bounds["max"])
+        errors[mask] = errors[mask].apply(lambda e: e + [f"{column} out of range"])
+
+    for column in rules.get("valid_date", []):
+        mask = ~df[column].apply(is_valid_date)
+        errors[mask] = errors[mask].apply(lambda e: e + [f"invalid {column}"])
+
+    for pair in rules.get("date_after", []):
+        before_col = pair["before_column"]
+        after_col = pair["after_column"]
+        before_valid = df[before_col].apply(is_valid_date)
+        after_valid = df[after_col].apply(is_valid_date)
+        both_valid = before_valid & after_valid
+        bad_order = both_valid & (
+            pd.to_datetime(df[after_col], errors="coerce")
+            <= pd.to_datetime(df[before_col], errors="coerce")
+        )
+        errors[bad_order] = errors[bad_order].apply(
+            lambda e: e + [f"{after_col} not after {before_col}"]
+        )
 
     df = df.copy()
     df["_validation_errors"] = errors
     return df
 
-
-def validate_lab_tests(df: pd.DataFrame) -> pd.DataFrame:
-    errors = pd.Series([[] for _ in range(len(df))], index=df.index)
-
-    bad_result = ~df["result"].isin(["PASS", "FAIL", "PENDING"])
-    errors[bad_result] = errors[bad_result].apply(lambda e: e + ["invalid result value"])
-
-    missing_batch = df["batch_id"].isna()
-    errors[missing_batch] = errors[missing_batch].apply(lambda e: e + ["missing batch_id"])
-
-    bad_measurement = ~df["measurement_value"].between(0, 200)
-    errors[bad_measurement] = errors[bad_measurement].apply(lambda e: e + ["measurement_value out of range"])
-
-    bad_date = ~df["test_date"].apply(is_valid_date)
-    errors[bad_date] = errors[bad_date].apply(lambda e: e + ["invalid test_date"])
-
-    df = df.copy()
-    df["_validation_errors"] = errors
-    return df
-
-
-def validate_device_events(df: pd.DataFrame) -> pd.DataFrame:
-    errors = pd.Series([[] for _ in range(len(df))], index=df.index)
-
-    bad_severity = ~df["severity"].isin(["LOW", "MEDIUM", "HIGH", "CRITICAL"])
-    errors[bad_severity] = errors[bad_severity].apply(lambda e: e + ["invalid severity value"])
-
-    missing_device = df["device_id"].isna()
-    errors[missing_device] = errors[missing_device].apply(lambda e: e + ["missing device_id"])
-
-    bad_timestamp = ~df["event_timestamp"].apply(is_valid_date)
-    errors[bad_timestamp] = errors[bad_timestamp].apply(lambda e: e + ["invalid event_timestamp"])
-
-    df = df.copy()
-    df["_validation_errors"] = errors
-    return df
-
-
-def validate_quality_deviations(df: pd.DataFrame) -> pd.DataFrame:
-    errors = pd.Series([[] for _ in range(len(df))], index=df.index)
-
-    bad_severity = ~df["severity"].isin(["LOW", "MEDIUM", "HIGH", "CRITICAL"])
-    errors[bad_severity] = errors[bad_severity].apply(lambda e: e + ["invalid severity value"])
-
-    missing_batch = df["batch_id"].isna()
-    errors[missing_batch] = errors[missing_batch].apply(lambda e: e + ["missing batch_id"])
-
-    df = df.copy()
-    df["_validation_errors"] = errors
-    return df
-
-
-def validate_supplier_inspections(df: pd.DataFrame) -> pd.DataFrame:
-    errors = pd.Series([[] for _ in range(len(df))], index=df.index)
-
-    bad_result = ~df["inspection_result"].isin(["PASS", "FAIL"])
-    errors[bad_result] = errors[bad_result].apply(lambda e: e + ["invalid inspection_result"])
-
-    missing_supplier = df["supplier_id"].isna()
-    errors[missing_supplier] = errors[missing_supplier].apply(lambda e: e + ["missing supplier_id"])
-
-    df = df.copy()
-    df["_validation_errors"] = errors
-    return df
-
-
-def validate_document_metadata(df: pd.DataFrame) -> pd.DataFrame:
-    errors = pd.Series([[] for _ in range(len(df))], index=df.index)
-
-    valid_statuses = ["APPROVED", "DRAFT", "OBSOLETE", "PENDING_APPROVAL"]
-    bad_status = ~df["approval_status"].isin(valid_statuses)
-    errors[bad_status] = errors[bad_status].apply(lambda e: e + ["invalid approval_status"])
-
-    bad_date = ~df["effective_date"].apply(is_valid_date)
-    errors[bad_date] = errors[bad_date].apply(lambda e: e + ["invalid effective_date"])
-
-    df = df.copy()
-    df["_validation_errors"] = errors
-    return df
-
-
-VALIDATORS = {
-    "batches": validate_batches,
-    "lab_tests": validate_lab_tests,
-    "device_events": validate_device_events,
-    "quality_deviations": validate_quality_deviations,
-    "supplier_inspections": validate_supplier_inspections,
-    "document_metadata": validate_document_metadata,
-}
 
 def process_table(table_name: str) -> dict:
     bronze_path = BRONZE_DIR / f"{table_name}.parquet"
     df = pd.read_parquet(bronze_path)
     input_rows = len(df)
 
-    # Identify exact duplicate rows (keep the first occurrence, quarantine the rest)
-    dedup_cols = [c for c in df.columns if c != "_ingested_at"]
-    is_duplicate = df.duplicated(subset=dedup_cols, keep="first")
-    duplicate_df = df[is_duplicate].copy()
-    df = df[~is_duplicate].copy()
+    rules = CONFIG["tables"][table_name].get("rules", {})
 
-    validator = VALIDATORS[table_name]
-    validated = validator(df)
+    duplicate_df = pd.DataFrame()
+    if rules.get("no_duplicates", False):
+        dedup_cols = [c for c in df.columns if c != "_ingested_at"]
+        is_duplicate = df.duplicated(subset=dedup_cols, keep="first")
+        duplicate_df = df[is_duplicate].copy()
+        df = df[~is_duplicate].copy()
+
+    validated = apply_rules(df, table_name)
 
     is_clean = validated["_validation_errors"].apply(len) == 0
     silver_df = validated[is_clean].drop(columns=["_validation_errors"])
     quarantine_df = validated[~is_clean].copy()
-    quarantine_df["_validation_errors"] = quarantine_df["_validation_errors"].apply(lambda e: ", ".join(e))
+    quarantine_df["_validation_errors"] = quarantine_df["_validation_errors"].apply(", ".join)
 
     if len(duplicate_df) > 0:
         duplicate_df["_validation_errors"] = "duplicate row"
@@ -182,11 +118,12 @@ def process_table(table_name: str) -> dict:
         "quarantined_rows": new_quarantine_count,
     }
 
+
 def main():
     print(f"Silver validation run {RUN_ID} started at {RUN_STARTED_AT}\n")
 
     audit_records = []
-    for table_name in VALIDATORS:
+    for table_name in CONFIG["tables"]:
         result = process_table(table_name)
         audit_records.append(result)
 

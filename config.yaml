@@ -1,0 +1,110 @@
+# Schema and data quality configuration for the NovaMed Lakehouse pipeline.
+# Editing this file changes validation behavior without touching pipeline code.
+
+tables:
+  batches:
+    required_columns:
+      - batch_id
+      - product_id
+      - product_name
+      - manufacture_date
+      - expiry_date
+      - batch_status
+      - plant_code
+    id_column: batch_id
+    rules:
+      not_null:
+        - batch_id
+      date_after:
+        - {before_column: manufacture_date, after_column: expiry_date}
+
+  lab_tests:
+    required_columns:
+      - test_id
+      - batch_id
+      - device_id
+      - test_type
+      - result
+      - measurement_value
+      - test_date
+      - laboratory_code
+    id_column: test_id
+    rules:
+      not_null:
+        - batch_id
+      allowed_values:
+        result: [PASS, FAIL, PENDING]
+      numeric_range:
+        measurement_value: {min: 0, max: 200}
+      valid_date:
+        - test_date
+      no_duplicates: true
+
+  device_events:
+    required_columns:
+      - event_id
+      - device_id
+      - batch_id
+      - event_type
+      - severity
+      - event_timestamp
+      - event_status
+    id_column: event_id
+    rules:
+      not_null:
+        - device_id
+      allowed_values:
+        severity: [LOW, MEDIUM, HIGH, CRITICAL]
+      valid_date:
+        - event_timestamp
+      no_duplicates: true
+
+  quality_deviations:
+    required_columns:
+      - deviation_id
+      - batch_id
+      - opened_date
+      - closed_date
+      - severity
+      - status
+      - description
+    id_column: deviation_id
+    rules:
+      not_null:
+        - batch_id
+      allowed_values:
+        severity: [LOW, MEDIUM, HIGH, CRITICAL]
+
+  supplier_inspections:
+    required_columns:
+      - inspection_id
+      - supplier_id
+      - supplier_name
+      - country
+      - supplier_approval_status
+      - material_lot
+      - inspection_date
+      - inspection_result
+      - defect_count
+    id_column: inspection_id
+    rules:
+      not_null:
+        - supplier_id
+      allowed_values:
+        inspection_result: [PASS, FAIL]
+
+  document_metadata:
+    required_columns:
+      - document_id
+      - document_type
+      - document_title
+      - version
+      - effective_date
+      - approval_status
+      - owner_department
+    id_column: document_id
+    rules:
+      allowed_values:
+        approval_status: [APPROVED, DRAFT, OBSOLETE, PENDING_APPROVAL]
+      valid_date:
+        - effective_date
