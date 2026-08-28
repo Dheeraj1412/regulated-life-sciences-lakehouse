@@ -1,4 +1,5 @@
 from pathlib import Path
+import uuid
 from datetime import datetime, timezone
 import pandas as pd
 
@@ -74,7 +75,8 @@ def build_deviation_summary_by_severity():
 
 
 def main():
-    print(f"Gold modeling run started at {RUN_TIMESTAMP}\n")
+    run_id = str(uuid.uuid4())
+    print(f"Gold modeling run {run_id} started at {RUN_TIMESTAMP}\n")
 
     tables = {
         "batch_quality_summary": build_batch_quality_summary,
@@ -82,13 +84,29 @@ def main():
         "deviation_summary_by_severity": build_deviation_summary_by_severity,
     }
 
+    audit_records = []
     for table_name, builder in tables.items():
         df = builder()
         output_path = GOLD_DIR / f"{table_name}.parquet"
         df.to_parquet(output_path, index=False)
         print(f"  {table_name}: {len(df)} rows -> {output_path.relative_to(BASE_DIR)}")
+        audit_records.append({
+            "run_id": run_id,
+            "table_name": table_name,
+            "row_count": len(df),
+            "status": "SUCCESS",
+        })
 
-    print("\nGold modeling complete.")
+    audit_df = pd.DataFrame(audit_records)
+    audit_df["run_timestamp"] = RUN_TIMESTAMP
+
+    audit_log_path = GOLD_DIR / "_gold_audit_log.parquet"
+    if audit_log_path.exists():
+        existing = pd.read_parquet(audit_log_path)
+        audit_df = pd.concat([existing, audit_df], ignore_index=True)
+    audit_df.to_parquet(audit_log_path, index=False)
+
+    print(f"\nGold modeling run {run_id} complete.")
 
 
 if __name__ == "__main__":
