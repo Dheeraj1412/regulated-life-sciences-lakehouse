@@ -4,7 +4,7 @@
 
 NovaMed Devices is a fictional medical-device manufacturer that needs a centralized, governed analytics platform for laboratory test results, manufacturing batches, device-quality events, supplier inspections, quality deviations, and controlled-document metadata.
 
-This personal portfolio project builds an end-to-end Microsoft Fabric Lakehouse using a bronze, silver, and gold medallion architecture. It demonstrates PySpark transformation, Delta Lake storage, data-quality validation, rejected-record quarantine, lineage metadata, audit logging, and quality reporting.
+This personal portfolio project builds an end-to-end Lakehouse using a bronze, silver, and gold medallion architecture, implemented in Python and pandas and structured to be portable to PySpark and Delta Lake for production-scale deployment. It demonstrates data-quality validation, rejected-record quarantine, lineage metadata, audit logging, and quality reporting using fully synthetic data.
 
 ## Disclaimer
 
@@ -12,15 +12,10 @@ This project uses fully synthetic data. It is not an FDA-validated system and do
 
 ## Technology Stack
 
-- Microsoft Fabric
-- OneLake and Lakehouse
-- PySpark
-- Delta Lake
-- SQL
 - Python
-- PostgreSQL
-- Amazon S3
-- Power BI
+- pandas
+- PyArrow (Parquet storage)
+- SQL
 - Git and GitHub
 
 ## Data Sources
@@ -32,17 +27,16 @@ This project uses fully synthetic data. It is not an FDA-validated system and do
 - Supplier inspections
 - Controlled-document metadata
 
-## Planned Architecture
+## Architecture
 
-Source systems → Fabric Data Pipeline / Notebook → Bronze Delta → Silver Delta → Gold Delta → SQL / Power BI
+Source systems → Python ETL scripts → Bronze Parquet (raw + lineage metadata) → Silver Parquet (validated) + Quarantine (rejected records with reasons) → Gold Parquet (business-ready summaries) → Reporting
 
 ## Project Status
 
 - [x] Project architecture defined
 - [x] Synthetic source-data generator created
-- [ ] Bronze ingestion
-- [ ] Silver validation and transformations
+- [x] Bronze ingestion
+- [x] Silver validation and transformations
 - [ ] Gold data model
 - [ ] Audit and lineage tables
-- [ ] Power BI dashboard
-- [ ] AWS S3 cross-cloud ingestion
+- [ ] Quality reporting / dashboard
