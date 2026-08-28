@@ -92,6 +92,7 @@ python src/pipeline_summary.py
 - Python, pandas
 - PyArrow for Parquet storage
 - Git and GitHub
+- PyYAML (data contracts / config-driven validation rules)
 
 Designed to be portable to PySpark and Delta Lake for production-scale deployment on Databricks or Microsoft Fabric.
 
@@ -113,4 +114,4 @@ Designed to be portable to PySpark and Delta Lake for production-scale deploymen
 - [x] Gold business-ready summary tables
 - [x] Automated test suite and CI pipeline (GitHub Actions)
 - [ ] Data dictionary and architecture documentation
-- [ ] Quality reporting dashboard
+- [ ] Quality reporting dashboard- [x] Config-driven data contracts and schema validation
