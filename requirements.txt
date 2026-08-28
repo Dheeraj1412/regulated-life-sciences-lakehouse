@@ -4,3 +4,5 @@ numpy
 pyarrow
 plotly
 pytest
+pyyaml
+pyyaml
