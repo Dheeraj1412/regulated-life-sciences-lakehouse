@@ -2,3 +2,4 @@ pandas
 faker
 numpy
 pyarrow
+plotly
