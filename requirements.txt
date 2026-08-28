@@ -3,3 +3,4 @@ faker
 numpy
 pyarrow
 plotly
+pytest
