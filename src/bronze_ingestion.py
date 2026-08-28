@@ -1,4 +1,5 @@
 from pathlib import Path
+import uuid
 from datetime import datetime, timezone
 import pandas as pd
 
@@ -43,14 +44,54 @@ def ingest_file(table_name: str, filename: str) -> pd.DataFrame:
     return df
 
 def main():
-    print(f"Bronze ingestion started at {INGESTION_TIMESTAMP}")
+    run_id = str(uuid.uuid4())
+    run_started_at = INGESTION_TIMESTAMP
+    audit_records = []
+
+    print(f"Bronze ingestion run {run_id} started at {run_started_at}")
     print(f"Reading from: {SOURCE_DIR}")
     print(f"Writing to:   {BRONZE_DIR}\n")
 
-    for table_name, filename in SOURCE_FILES.items():
-        ingest_file(table_name, filename)
+    overall_status = "SUCCESS"
 
-    print("\nBronze ingestion complete.")
+    for table_name, filename in SOURCE_FILES.items():
+        try:
+            df = ingest_file(table_name, filename)
+            audit_records.append({
+                "run_id": run_id,
+                "table_name": table_name,
+                "source_file": filename,
+                "row_count": len(df),
+                "status": "SUCCESS",
+                "error_message": None,
+            })
+        except Exception as e:
+            overall_status = "FAILED"
+            audit_records.append({
+                "run_id": run_id,
+                "table_name": table_name,
+                "source_file": filename,
+                "row_count": 0,
+                "status": "FAILED",
+                "error_message": str(e),
+            })
+            print(f"  ERROR ingesting {table_name}: {e}")
+
+    audit_df = pd.DataFrame(audit_records)
+    audit_df["run_started_at"] = run_started_at
+    audit_df["run_completed_at"] = datetime.now(timezone.utc).isoformat()
+    audit_df["overall_status"] = overall_status
+
+    audit_log_path = BRONZE_DIR / "_audit_log.parquet"
+
+    if audit_log_path.exists():
+        existing_audit = pd.read_parquet(audit_log_path)
+        audit_df = pd.concat([existing_audit, audit_df], ignore_index=True)
+
+    audit_df.to_parquet(audit_log_path, index=False)
+
+    print(f"\nBronze ingestion run {run_id} finished with status: {overall_status}")
+    print(f"Audit log updated: {audit_log_path.relative_to(BASE_DIR)}")
 
 if __name__ == "__main__":
     main()
