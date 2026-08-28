@@ -114,6 +114,15 @@ open docs/dashboard.html   # macOS; use xdg-open on Linux or start on Windows
 python -m pytest tests/ -v
 ```
 
+### Run with Docker (alternative to manual setup)
+
+```
+docker build -t novamed-lakehouse .
+docker run --rm novamed-lakehouse
+```
+
+This runs the entire pipeline (data generation through gold layer, plus the full test suite) inside an isolated container, with no local Python setup required.
+
 ## Technology Stack
 
 - Python, pandas
@@ -121,6 +130,7 @@ python -m pytest tests/ -v
 - PyYAML for config-driven data contracts and validation rules
 - Plotly for the interactive dashboard
 - pytest and GitHub Actions for automated testing and CI
+- Docker
 - Git and GitHub
 
 Designed to be portable to PySpark and Delta Lake for production-scale deployment on Databricks or Microsoft Fabric.
@@ -145,7 +155,7 @@ Designed to be portable to PySpark and Delta Lake for production-scale deploymen
 - [x] Interactive quality reporting dashboard
 - [x] Automated test suite and CI pipeline (GitHub Actions)
 - [x] Config-driven data contracts and schema validation
-- [ ] Containerization (Docker)
+- [x] Containerization (Docker)
 
 ### Stretch goals
 
