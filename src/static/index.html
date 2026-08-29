@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NovaMed Quality Data Platform</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --border: #253044;
+    --text: #e6e9f0;
+    --muted: #8b93a7;
+    --accent: #4f8cff;
+    --green: #3ecf8e;
+    --red: #ff5c5c;
+    --yellow: #f4b740;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 { font-size: 20px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  header a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 6px;
+  }
+  header a:hover { border-color: var(--accent); }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 14px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  nav button.active {
+    color: var(--text);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  main { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .card .value { font-size: 28px; font-weight: 600; margin-top: 6px; }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  input, select, textarea, button.btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  button.btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  button.btn:hover { opacity: .9; }
+  button.btn.secondary { background: var(--panel); border: 1px solid var(--border); color: var(--text); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #1c2436; }
+
+  .badge { padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge.RELEASED, .badge.PASS, .badge.CLOSED, .badge.RESOLVED, .badge.APPROVED { background: rgba(62,207,142,.15); color: var(--green); }
+  .badge.ON_HOLD, .badge.PENDING_REVIEW, .badge.UNDER_INVESTIGATION, .badge.OPEN, .badge.ACKNOWLEDGED { background: rgba(244,183,64,.15); color: var(--yellow); }
+  .badge.REJECTED, .badge.FAIL { background: rgba(255,92,92,.15); color: var(--red); }
+  .badge.LOW { background: rgba(62,207,142,.15); color: var(--green); }
+  .badge.MEDIUM { background: rgba(244,183,64,.15); color: var(--yellow); }
+  .badge.HIGH, .badge.CRITICAL { background: rgba(255,92,92,.15); color: var(--red); }
+
+  .panel-title { font-size: 15px; font-weight: 600; margin: 0 0 14px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .form-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .form-panel label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 5px; }
+  .form-panel input, .form-panel select, .form-panel textarea { width: 100%; }
+  .form-panel button { margin-top: 16px; width: 100%; }
+  .msg { margin-top: 12px; font-size: 13px; padding: 10px; border-radius: 6px; display: none; }
+  .msg.ok { display: block; background: rgba(62,207,142,.12); color: var(--green); }
+  .msg.err { display: block; background: rgba(255,92,92,.12); color: var(--red); }
+
+  .quarantine-item { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+  .quarantine-item .reason { color: var(--red); font-size: 12px; margin-bottom: 6px; }
+  .quarantine-item pre { margin: 0; font-size: 12px; color: var(--muted); white-space: pre-wrap; word-break: break-all; }
+
+  .muted-small { color: var(--muted); font-size: 12px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>NovaMed Quality Data Platform</h1>
+    <div class="sub">Regulated life-sciences lakehouse &middot; bronze / silver / gold</div>
+  </div>
+  <a href="/docs">API Reference &rarr;</a>
+</header>
+
+<nav>
+  <button class="active" data-tab="overview">Overview</button>
+  <button data-tab="batches">Batches</button>
+  <button data-tab="suppliers">Suppliers</button>
+  <button data-tab="quarantine">Quarantine</button>
+  <button data-tab="actions">Log an Event</button>
+</nav>
+
+<main>
+
+  <section id="overview" class="tab active">
+    <div class="cards" id="overview-cards"></div>
+    <div class="panel-title">Deviations by severity</div>
+    <table id="deviation-table">
+      <thead><tr><th>Severity</th><th>Status</th><th>Count</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="batches" class="tab">
+    <div class="toolbar">
+      <select id="batch-status-filter">
+        <option value="">All statuses</option>
+        <option>RELEASED</option>
+        <option>PENDING_REVIEW</option>
+        <option>ON_HOLD</option>
+        <option>REJECTED</option>
+      </select>
+      <input id="batch-min-pass" type="number" placeholder="Min pass rate %" style="width:150px">
+      <button class="btn secondary" onclick="loadBatches()">Filter</button>
+      <span class="muted-small" id="batch-count"></span>
+    </div>
+    <table id="batch-table">
+      <thead><tr><th>Batch</th><th>Product</th><th>Status</th><th>Tests</th><th>Pass Rate</th><th>Open Deviations</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="suppliers" class="tab">
+    <table id="supplier-table">
+      <thead><tr><th>Supplier</th><th>Country</th><th>Inspections</th><th>Pass Rate</th><th>Defects</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="quarantine" class="tab">
+    <div class="toolbar">
+      <select id="quarantine-table-select">
+        <option value="batches">batches</option>
+        <option value="lab_tests">lab_tests</option>
+        <option value="device_events">device_events</option>
+        <option value="quality_deviations">quality_deviations</option>
+        <option value="supplier_inspections">supplier_inspections</option>
+        <option value="document_metadata">document_metadata</option>
+      </select>
+      <button class="btn secondary" onclick="loadQuarantine()">Load</button>
+    </div>
+    <div id="quarantine-list"></div>
+  </section>
+
+  <section id="actions" class="tab">
+    <div class="grid-2">
+      <div class="form-panel">
+        <div class="panel-title">Open a quality deviation</div>
+        <label>Batch ID</label>
+        <input id="dev-batch-id" placeholder="BAT-00001">
+        <label>Severity</label>
+        <select id="dev-severity">
+          <option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option>
+        </select>
+        <label>Description</label>
+        <textarea id="dev-description" rows="3" placeholder="What happened?"></textarea>
+        <button class="btn" onclick="createDeviation()">Log Deviation</button>
+        <div class="msg" id="dev-msg"></div>
+      </div>
+
+      <div class="form-panel">
+        <div class="panel-title">Log a device event</div>
+        <label>Device ID</label>
+        <input id="ev-device-id" placeholder="DEV-00001">
+        <label>Batch ID</label>
+        <input id="ev-batch-id" placeholder="BAT-00001">
+        <label>Event Type</label>
+        <select id="ev-type">
+          <option>TEMPERATURE_ALERT</option><option>CALIBRATION_DUE</option>
+          <option>POWER_FAILURE</option><option>SENSOR_WARNING</option><option>CONNECTIVITY_LOSS</option>
+        </select>
+        <label>Severity</label>
+        <select id="ev-severity">
+          <option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option>
+        </select>
+        <button class="btn" onclick="createDeviceEvent()">Log Event</button>
+        <div class="msg" id="ev-msg"></div>
+      </div>
+    </div>
+    <p class="muted-small">Writes append to the source files. Run the pipeline (bronze &rarr; silver &rarr; gold) to see them reflected in Batches / Suppliers / Overview.</p>
+  </section>
+
+</main>
+
+<script>
+const API = "";
+
+document.querySelectorAll("nav button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+function badge(value) {
+  return `<span class="badge ${value}">${value}</span>`;
+}
+
+async function loadOverview() {
+  const [batchesRes, suppliersRes, devRes] = await Promise.all([
+    fetch(`${API}/batches?limit=1`).then(r => r.json()),
+    fetch(`${API}/suppliers`).then(r => r.json()),
+    fetch(`${API}/deviations/summary`).then(r => r.json()),
+  ]);
+
+  const openDeviations = devRes.filter(d => d.status !== "CLOSED").reduce((sum, d) => sum + d.count, 0);
+  const avgSupplierPass = suppliersRes.length
+    ? (suppliersRes.reduce((s, x) => s + x.pass_rate_pct, 0) / suppliersRes.length).toFixed(1)
+    : "-";
+
+  document.getElementById("overview-cards").innerHTML = `
+    <div class="card"><div class="label">Total Batches</div><div class="value">${batchesRes.total}</div></div>
+    <div class="card"><div class="label">Suppliers</div><div class="value">${suppliersRes.length}</div></div>
+    <div class="card"><div class="label">Avg Supplier Pass Rate</div><div class="value">${avgSupplierPass}%</div></div>
+    <div class="card"><div class="label">Open Deviations</div><div class="value">${openDeviations}</div></div>
+  `;
+
+  const tbody = document.querySelector("#deviation-table tbody");
+  tbody.innerHTML = devRes.map(d => `
+    <tr><td>${badge(d.severity)}</td><td>${badge(d.status)}</td><td>${d.count}</td></tr>
+  `).join("");
+}
+
+async function loadBatches() {
+  const status = document.getElementById("batch-status-filter").value;
+  const minPass = document.getElementById("batch-min-pass").value;
+  let url = `${API}/batches?limit=100`;
+  if (status) url += `&status=${status}`;
+  if (minPass) url += `&min_pass_rate=${minPass}`;
+
+  const data = await fetch(url).then(r => r.json());
+  document.getElementById("batch-count").textContent = `${data.total} batches`;
+
+  const tbody = document.querySelector("#batch-table tbody");
+  tbody.innerHTML = data.results.map(b => `
+    <tr>
+      <td>${b.batch_id}</td>
+      <td>${b.product_name}</td>
+      <td>${badge(b.batch_status)}</td>
+      <td>${b.passed_tests}/${b.total_tests}</td>
+      <td>${b.pass_rate_pct}%</td>
+      <td>${b.open_deviation_count}</td>
+    </tr>
+  `).join("");
+}
+
+async function loadSuppliers() {
+  const data = await fetch(`${API}/suppliers`).then(r => r.json());
+  const tbody = document.querySelector("#supplier-table tbody");
+  tbody.innerHTML = data.map(s => `
+    <tr>
+      <td>${s.supplier_name}</td>
+      <td>${s.country}</td>
+      <td>${s.passed_inspections}/${s.total_inspections}</td>
+      <td>${s.pass_rate_pct}%</td>
+      <td>${s.total_defects}</td>
+      <td>${badge(s.latest_approval_status)}</td>
+    </tr>
+  `).join("");
+}
+
+async function loadQuarantine() {
+  const table = document.getElementById("quarantine-table-select").value;
+  const container = document.getElementById("quarantine-list");
+  container.innerHTML = "Loading...";
+
+  try {
+    const data = await fetch(`${API}/quarantine/${table}`).then(r => {
+      if (!r.ok) throw new Error("No quarantine data");
+      return r.json();
+    });
+    if (data.length === 0) {
+      container.innerHTML = `<p class="muted-small">No quarantined records for ${table}.</p>`;
+      return;
+    }
+    container.innerHTML = data.map(item => `
+      <div class="quarantine-item">
+        <div class="reason">${item.reason}</div>
+        <pre>${JSON.stringify(item.record, null, 2)}</pre>
+      </div>
+    `).join("");
+  } catch (e) {
+    container.innerHTML = `<p class="muted-small">Could not load quarantine data for ${table}.</p>`;
+  }
+}
+
+async function createDeviation() {
+  const msg = document.getElementById("dev-msg");
+  const body = {
+    batch_id: document.getElementById("dev-batch-id").value,
+    severity: document.getElementById("dev-severity").value,
+    description: document.getElementById("dev-description").value,
+  };
+  try {
+    const res = await fetch(`${API}/deviations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Failed");
+    msg.className = "msg ok";
+    msg.textContent = `Created ${data.id}. ${data.message}`;
+  } catch (e) {
+    msg.className = "msg err";
+    msg.textContent = e.message;
+  }
+}
+
+async function createDeviceEvent() {
+  const msg = document.getElementById("ev-msg");
+  const body = {
+    device_id: document.getElementById("ev-device-id").value,
+    batch_id: document.getElementById("ev-batch-id").value,
+    event_type: document.getElementById("ev-type").value,
+    severity: document.getElementById("ev-severity").value,
+  };
+  try {
+    const res = await fetch(`${API}/device-events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Failed");
+    msg.className = "msg ok";
+    msg.textContent = `Created event ${data.id.slice(0,8)}... ${data.message}`;
+  } catch (e) {
+    msg.className = "msg err";
+    msg.textContent = e.message;
+  }
+}
+
+loadOverview();
+loadBatches();
+loadSuppliers();
+loadQuarantine();
+</script>
+
+</body>
+</html>

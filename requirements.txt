@@ -6,3 +6,5 @@ plotly
 pytest
 pyyaml
 pyyaml
+fastapi
+uvicorn
