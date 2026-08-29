@@ -167,9 +167,9 @@ Designed to be portable to PySpark and Delta Lake for production-scale deploymen
 - [x] Config-driven data contracts and schema validation
 - [x] Containerization (Docker)
 - [x] REST API layer with interactive dashboard UI
+- [x] Statistical process control monitoring and anomaly detection
 
 ### Stretch goals
 
-- [ ] Monitoring and quality trend tracking
 - [ ] Incremental processing
 - [ ] AWS S3 cross-cloud ingestion
