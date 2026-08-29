@@ -213,6 +213,8 @@ Runs the entire pipeline plus the full test suite inside an isolated container �
 ---
 
 ## Project Structure
+
+```
 regulated-life-sciences-lakehouse/
 ├── data/
 │   ├── source/              raw synthetic source files
@@ -239,6 +241,7 @@ regulated-life-sciences-lakehouse/
 ├── config.yaml                data quality rules
 ├── Dockerfile
 └── requirements.txt
+```
 
 ---
 
