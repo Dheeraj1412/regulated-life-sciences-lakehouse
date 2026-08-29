@@ -54,6 +54,16 @@ All rules are defined in `config.yaml`, not hardcoded in the pipeline scripts, s
 
 Every quarantined row is tagged with its specific failure reason and kept, never deleted, so the pipeline stays fully auditable.
 
+## Monitoring and Anomaly Detection
+
+Beyond validating individual pipeline runs, the platform includes statistical process control (SPC) style monitoring, tracking pass rate over time and flagging anomalies the same way a regulated manufacturing quality system would.
+
+A simulated 14-day pipeline history was generated (`src/simulate_history.py`) with a realistic defect-rate signal: stable at 1-2% baseline, with a deliberate quality incident injected on day 11 (14% defect rate) followed by a partial recovery on day 12 (6%). The monitor (`src/monitor.py`) computes a rolling mean and standard deviation of pass rate per table and flags any day that breaches either a hard 95% threshold or a statistical lower control limit (rolling mean minus 2 standard deviations).
+
+Result: all six tables were correctly flagged on day 11, and five remained flagged on day 12 as the incident was still resolving, with zero false positives on the 12 clean days. See `docs/monitoring_dashboard.html` for the full trend visualization with anomalies marked.
+
+After the simulation, the pipeline automatically restores the clean baseline dataset and rebuilds bronze/silver/gold, so the repo state and documented Results table above are unaffected by the simulation.
+
 ## Architecture
 
 Source files (CSV/JSON, synthetic) feed into a bronze layer, which stores raw data plus ingestion metadata such as timestamp, source file, and run ID, and checks each file against a schema contract defined in config.yaml. From there, validation rules split each table into a silver layer (rows that pass every rule) and a quarantine layer (rows that fail, tagged with the reason). The silver layer feeds a gold layer of business-ready aggregated tables. Audit logs record the run ID, timestamps, row counts, and pass/fail status at every stage, and a unified audit view ties bronze, silver, and gold run history together.
