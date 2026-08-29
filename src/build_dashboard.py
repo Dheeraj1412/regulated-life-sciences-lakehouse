@@ -45,7 +45,7 @@ def build_dashboard():
     )
 
     fig.add_trace(
-        go.Histogram(x=batch_summary["pass_rate_pct"], nbinsx=10, marker_color="#2E86AB"),
+        go.Histogram(x=batch_summary["pass_rate_pct"], nbinsx=10, marker_color="#6366f1"),
         row=1, col=1,
     )
 
@@ -53,7 +53,7 @@ def build_dashboard():
         go.Bar(
             x=supplier_scorecard["supplier_name"],
             y=supplier_scorecard["pass_rate_pct"],
-            marker_color="#A23B72",
+            marker_color="#ec4899",
         ),
         row=1, col=2,
     )
@@ -66,17 +66,17 @@ def build_dashboard():
         go.Bar(
             x=severity_totals.index,
             y=severity_totals.values,
-            marker_color=["#6A994E", "#F4A261", "#E76F51", "#C1121F"],
+            marker_color=["#34d399", "#fbbf24", "#fb7185", "#f43f5e"],
         ),
         row=2, col=1,
     )
 
     fig.add_trace(
-        go.Bar(name="Passed", x=reconciliation["table"], y=reconciliation["silver"], marker_color="#2E86AB"),
+        go.Bar(name="Passed", x=reconciliation["table"], y=reconciliation["silver"], marker_color="#6366f1"),
         row=2, col=2,
     )
     fig.add_trace(
-        go.Bar(name="Quarantined", x=reconciliation["table"], y=reconciliation["quarantine"], marker_color="#C1121F"),
+        go.Bar(name="Quarantined", x=reconciliation["table"], y=reconciliation["quarantine"], marker_color="#fb7185"),
         row=2, col=2,
     )
 
@@ -86,7 +86,15 @@ def build_dashboard():
         title_text="NovaMed Devices — Quality Data Platform Dashboard",
         showlegend=True,
         barmode="stack",
+        paper_bgcolor="#06070d",
+        plot_bgcolor="#10121c",
+        font=dict(color="#f2f3f9", family="Inter, sans-serif"),
+        title_font=dict(size=20, color="#f2f3f9"),
     )
+    fig.update_xaxes(gridcolor="#1f2233", zerolinecolor="#1f2233")
+    fig.update_yaxes(gridcolor="#1f2233", zerolinecolor="#1f2233")
+    for annotation in fig.layout.annotations:
+        annotation.font.color = "#f2f3f9"
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     fig.write_html(str(OUTPUT_PATH))
