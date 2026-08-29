@@ -6,3 +6,5 @@ venv/
 .DS_Store
 .ipynb_checkpoints/
 data/lakehouse/
+data/s3_downloads/
+.pytest_cache/

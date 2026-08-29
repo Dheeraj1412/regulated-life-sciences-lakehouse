@@ -8,3 +8,7 @@ pyyaml
 pyyaml
 fastapi
 uvicorn
+boto3
+python-dotenv
+boto3
+python-dotenv
