@@ -64,6 +64,12 @@ Result: all six tables were correctly flagged on day 11, and five remained flagg
 
 After the simulation, the pipeline automatically restores the clean baseline dataset and rebuilds bronze/silver/gold, so the repo state and documented Results table above are unaffected by the simulation.
 
+## Incremental Processing
+
+In addition to the full-refresh pipeline described above, the platform includes an incremental ingestion path (`src/bronze_ingestion_incremental.py`) that tracks a per-table checkpoint of rows already processed and only ingests rows arriving after that checkpoint, appending them to the existing bronze table instead of reprocessing the full source file.
+
+A demo (`src/demo_incremental.py`) proves the behavior end to end: an initial run establishes a checkpoint against all current rows, an immediate rerun correctly skips every table since nothing changed, then 15 new rows are appended to a source file to simulate new data arriving, and a final run processes only those 15 new rows, leaving every other table untouched. Checkpoints and a dedicated incremental audit log are written to `data/lakehouse/bronze/_checkpoints.json` and `_incremental_audit_log.parquet`.
+
 ## Architecture
 
 Source files (CSV/JSON, synthetic) feed into a bronze layer, which stores raw data plus ingestion metadata such as timestamp, source file, and run ID, and checks each file against a schema contract defined in config.yaml. From there, validation rules split each table into a silver layer (rows that pass every rule) and a quarantine layer (rows that fail, tagged with the reason). The silver layer feeds a gold layer of business-ready aggregated tables. Audit logs record the run ID, timestamps, row counts, and pass/fail status at every stage, and a unified audit view ties bronze, silver, and gold run history together.
@@ -168,8 +174,8 @@ Designed to be portable to PySpark and Delta Lake for production-scale deploymen
 - [x] Containerization (Docker)
 - [x] REST API layer with interactive dashboard UI
 - [x] Statistical process control monitoring and anomaly detection
+- [x] Incremental processing with checkpoint tracking
 
 ### Stretch goals
 
-- [ ] Incremental processing
 - [ ] AWS S3 cross-cloud ingestion
