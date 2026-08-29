@@ -3,288 +3,392 @@
 <head>
 <meta charset="UTF-8">
 <title>NovaMed Quality Data Platform</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%236366f1%22/><text x=%2250%22 y=%2270%22 font-size=%2258%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22bold%22>N</text></svg>">
 <style>
-  :root {
-    --bg: #0f1420;
-    --panel: #161d2e;
-    --border: #253044;
-    --text: #e6e9f0;
-    --muted: #8b93a7;
-    --accent: #4f8cff;
-    --green: #3ecf8e;
-    --red: #ff5c5c;
-    --yellow: #f4b740;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-  }
-  header {
-    padding: 24px 32px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  header h1 { font-size: 20px; margin: 0; }
-  header .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  header a {
-    color: var(--accent);
-    text-decoration: none;
-    font-size: 13px;
-    border: 1px solid var(--border);
-    padding: 8px 14px;
-    border-radius: 6px;
-  }
-  header a:hover { border-color: var(--accent); }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #06070d; --panel: #10121c; --panel2: #14162280; --border: #1f2233; --border-hover: #2c3050;
+  --text: #f2f3f9; --muted: #7d839a; --accent: #6366f1; --accent2: #ec4899;
+  --glow: rgba(99,102,241,.28); --green: #34d399; --red: #fb7185; --yellow: #fbbf24;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background:
+    radial-gradient(circle at 15% -10%, rgba(99,102,241,.22), transparent 40%),
+    radial-gradient(circle at 100% 10%, rgba(236,72,153,.12), transparent 40%);
+  pointer-events: none; z-index: 0;
+}
 
-  nav {
-    display: flex;
-    gap: 4px;
-    padding: 0 32px;
-    border-bottom: 1px solid var(--border);
-  }
-  nav button {
-    background: none;
-    border: none;
-    color: var(--muted);
-    padding: 14px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-  }
-  nav button.active {
-    color: var(--text);
-    border-bottom: 2px solid var(--accent);
-  }
+.layout { display: flex; min-height: 100vh; position: relative; z-index: 1; }
 
-  main { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
-  .tab { display: none; }
-  .tab.active { display: block; }
+aside {
+  width: 236px; flex-shrink: 0; border-right: 1px solid var(--border);
+  padding: 26px 16px; background: rgba(16,18,28,.55); backdrop-filter: blur(20px);
+  position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column;
+}
+.brand { display: flex; align-items: center; gap: 11px; padding: 0 8px 26px; }
+.logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; box-shadow: 0 6px 18px var(--glow); }
+.brand-title { font-weight: 700; font-size: 14.5px; letter-spacing: -.01em; }
+.brand-sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
 
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px;
-  }
-  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
-  .card .value { font-size: 28px; font-weight: 600; margin-top: 6px; }
+.search-trigger {
+  display: flex; align-items: center; gap: 9px; background: var(--panel); border: 1px solid var(--border);
+  padding: 9px 12px; border-radius: 10px; color: var(--muted); font-size: 12px; cursor: pointer;
+  margin-bottom: 18px; transition: all .15s ease;
+}
+.search-trigger:hover { border-color: var(--border-hover); }
+.kbd { margin-left: auto; font-size: 10px; border: 1px solid var(--border); border-radius: 5px; padding: 2px 5px; font-family: 'JetBrains Mono'; }
 
-  .toolbar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  input, select, textarea, button.btn {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 9px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-  }
-  button.btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-  }
-  button.btn:hover { opacity: .9; }
-  button.btn.secondary { background: var(--panel); border: 1px solid var(--border); color: var(--text); }
+nav { display: flex; flex-direction: column; gap: 2px; }
+nav button {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: none; border: none; text-align: left; color: var(--muted);
+  padding: 10px 12px; border-radius: 9px; font-size: 13px; font-weight: 500;
+  font-family: inherit; cursor: pointer; transition: all .15s ease;
+}
+nav button .dot { width: 6px; height: 6px; border-radius: 50%; background: #3a3f5c; transition: all .15s ease; flex-shrink: 0; }
+nav button:hover { color: var(--text); background: var(--panel); }
+nav button.active { color: var(--text); background: linear-gradient(90deg, var(--glow), transparent); }
+nav button.active .dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 
-  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 10px; overflow: hidden; }
-  th, td { text-align: left; padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); }
-  th { color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #1c2436; }
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.api-link {
+  display: flex; align-items: center; justify-content: space-between; color: var(--text);
+  text-decoration: none; font-size: 12px; font-weight: 600; padding: 10px 12px;
+  border-radius: 10px; border: 1px solid var(--border); transition: all .15s ease;
+}
+.api-link:hover { border-color: var(--accent); background: var(--glow); }
+.status-line { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); margin-top: 12px; padding: 0 12px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
 
-  .badge { padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge.RELEASED, .badge.PASS, .badge.CLOSED, .badge.RESOLVED, .badge.APPROVED { background: rgba(62,207,142,.15); color: var(--green); }
-  .badge.ON_HOLD, .badge.PENDING_REVIEW, .badge.UNDER_INVESTIGATION, .badge.OPEN, .badge.ACKNOWLEDGED { background: rgba(244,183,64,.15); color: var(--yellow); }
-  .badge.REJECTED, .badge.FAIL { background: rgba(255,92,92,.15); color: var(--red); }
-  .badge.LOW { background: rgba(62,207,142,.15); color: var(--green); }
-  .badge.MEDIUM { background: rgba(244,183,64,.15); color: var(--yellow); }
-  .badge.HIGH, .badge.CRITICAL { background: rgba(255,92,92,.15); color: var(--red); }
+main { flex: 1; padding: 34px 40px; max-width: 1280px; }
+.tab { display: none; animation: rise .3s ease; }
+.tab.active { display: block; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  .panel-title { font-size: 15px; font-weight: 600; margin: 0 0 14px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .form-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-  .form-panel label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 5px; }
-  .form-panel input, .form-panel select, .form-panel textarea { width: 100%; }
-  .form-panel button { margin-top: 16px; width: 100%; }
-  .msg { margin-top: 12px; font-size: 13px; padding: 10px; border-radius: 6px; display: none; }
-  .msg.ok { display: block; background: rgba(62,207,142,.12); color: var(--green); }
-  .msg.err { display: block; background: rgba(255,92,92,.12); color: var(--red); }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 26px; }
+.page-title { font-size: 23px; font-weight: 800; letter-spacing: -.02em; }
+.page-sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+.page-count { font-size: 12px; color: var(--muted); }
 
-  .quarantine-item { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
-  .quarantine-item .reason { color: var(--red); font-size: 12px; margin-bottom: 6px; }
-  .quarantine-item pre { margin: 0; font-size: 12px; color: var(--muted); white-space: pre-wrap; word-break: break-all; }
+.bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
+.bento .span-2 { grid-column: span 2; }
+.tile {
+  background: linear-gradient(160deg, var(--panel), var(--panel2)); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px; position: relative; overflow: hidden;
+  transition: all .2s cubic-bezier(.2,.8,.2,1);
+}
+.tile:hover { transform: translateY(-2px); border-color: var(--border-hover); box-shadow: 0 16px 36px rgba(0,0,0,.4); }
+.tile .label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; }
+.tile .value { font-size: 30px; font-weight: 800; margin-top: 9px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tile .footnote { font-size: 11px; color: var(--muted); margin-top: 5px; }
 
-  .muted-small { color: var(--muted); font-size: 12px; margin-top: 10px; }
+.chart-tile { display: flex; align-items: center; gap: 22px; }
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; }
+.legend-swatch { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.legend-label { color: var(--muted); flex: 1; }
+.legend-val { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 26px 0 12px; }
+.section-head h2 { font-size: 14.5px; font-weight: 700; letter-spacing: -.01em; }
+
+.toolbar { display: flex; gap: 9px; margin-bottom: 14px; flex-wrap: wrap; }
+input, select, textarea, button.btn {
+  background: var(--panel); border: 1px solid var(--border); color: var(--text);
+  padding: 10px 13px; border-radius: 10px; font-size: 13px; font-family: inherit; transition: all .15s ease;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+button.btn { background: linear-gradient(135deg,var(--accent),#4f46e5); color:#fff; border:none; cursor:pointer; font-weight:600; }
+button.btn:hover { filter: brightness(1.12); box-shadow: 0 6px 18px var(--glow); transform: translateY(-1px); }
+button.btn:active { transform: translateY(0); }
+button.btn.secondary { background: var(--panel); border: 1px solid var(--border); color: var(--text); }
+button.btn.secondary:hover { border-color: var(--border-hover); filter:none; box-shadow:none; transform:none; }
+
+.card-table { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 12px 18px; font-size: 13px; border-bottom: 1px solid #191c2b; }
+th { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .07em; }
+tr:last-child td { border-bottom: none; }
+tbody tr { transition: background .12s ease; }
+tbody tr:hover td { background: rgba(99,102,241,.06); }
+
+.badge { padding: 4px 11px; border-radius: 20px; font-size: 10.5px; font-weight: 700; display: inline-block; }
+.badge.RELEASED,.badge.PASS,.badge.CLOSED,.badge.RESOLVED,.badge.APPROVED{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.25)}
+.badge.ON_HOLD,.badge.PENDING_REVIEW,.badge.UNDER_INVESTIGATION,.badge.OPEN,.badge.ACKNOWLEDGED{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
+.badge.REJECTED,.badge.FAIL{background:rgba(251,113,133,.12);color:var(--red);border:1px solid rgba(251,113,133,.25)}
+.badge.LOW{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.25)}
+.badge.MEDIUM{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
+.badge.HIGH,.badge.CRITICAL{background:rgba(251,113,133,.12);color:var(--red);border:1px solid rgba(251,113,133,.25)}
+
+.bar-cell { display:flex; align-items:center; gap:10px; }
+.bar-track { flex:1; height:6px; background:#191c2b; border-radius:4px; overflow:hidden; max-width:120px; }
+.bar-fill { height:100%; border-radius:4px; background: linear-gradient(90deg,var(--accent),var(--accent2)); width:0; transition: width .6s cubic-bezier(.2,.8,.2,1); }
+
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.form-panel { background: linear-gradient(160deg,var(--panel),var(--panel2)); border:1px solid var(--border); border-radius:16px; padding:22px; }
+.form-panel .ftitle { font-size: 13.5px; font-weight: 700; margin-bottom: 2px; }
+.form-panel label { display:block; font-size:10.5px; color:var(--muted); margin:14px 0 6px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+.form-panel input, .form-panel select, .form-panel textarea { width:100%; }
+.form-panel button { margin-top:18px; width:100%; padding:12px; }
+
+.quarantine-item { background: var(--panel); border:1px solid var(--border); border-radius:12px; padding:15px 17px; margin-bottom:9px; transition: all .15s ease; }
+.quarantine-item:hover { border-color: var(--border-hover); transform: translateX(3px); }
+.quarantine-item .reason { color: var(--red); font-size:11.5px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+.quarantine-item .reason::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--red); box-shadow:0 0 8px var(--red); }
+.quarantine-item pre { font-size:11.5px; color:var(--muted); white-space:pre-wrap; word-break:break-all; font-family:'JetBrains Mono',monospace; }
+
+.empty-state { text-align:center; padding:52px 20px; color:var(--muted); }
+.empty-state .icon { font-size:30px; margin-bottom:12px; opacity:.4; }
+.skeleton { background: linear-gradient(90deg,var(--panel) 25%,#1a1d2e 50%,var(--panel) 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; border-radius:6px; height:14px; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.cmdk-overlay { position: fixed; inset: 0; background: rgba(6,7,13,.7); backdrop-filter: blur(4px); display: none; align-items: flex-start; justify-content: center; padding-top: 12vh; z-index: 100; }
+.cmdk-overlay.open { display: flex; }
+.cmdk-box { width: 540px; max-width: 90vw; background: var(--panel); border: 1px solid var(--border-hover); border-radius: 16px; box-shadow: 0 30px 80px rgba(0,0,0,.6); overflow: hidden; animation: cmdkIn .15s ease; }
+@keyframes cmdkIn { from { opacity:0; transform: translateY(-8px) scale(.98);} to {opacity:1; transform:none;} }
+.cmdk-input { width: 100%; border: none; background: none; padding: 17px 20px; font-size: 14.5px; color: var(--text); font-family: inherit; border-bottom: 1px solid var(--border); }
+.cmdk-input:focus { outline: none; }
+.cmdk-list { max-height: 320px; overflow-y: auto; padding: 8px; }
+.cmdk-item { padding: 11px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--muted); }
+.cmdk-item.selected { background: var(--glow); color: var(--text); }
+.cmdk-item span.hint { font-size: 10.5px; color: var(--muted); }
+
+.toast-stack { position: fixed; bottom: 22px; right: 22px; z-index: 200; display: flex; flex-direction: column; gap: 9px; }
+.toast { background: var(--panel); border: 1px solid var(--border-hover); border-radius: 12px; padding: 13px 17px; font-size: 13px; min-width: 250px; box-shadow: 0 12px 30px rgba(0,0,0,.5); animation: toastIn .25s ease; }
+@keyframes toastIn { from { opacity:0; transform: translateX(20px);} to {opacity:1; transform:none;} }
+.toast.ok { border-left: 3px solid var(--green); }
+.toast.err { border-left: 3px solid var(--red); }
 </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <h1>NovaMed Quality Data Platform</h1>
-    <div class="sub">Regulated life-sciences lakehouse &middot; bronze / silver / gold</div>
+<div class="layout">
+  <aside>
+    <div class="brand">
+      <div class="logo">N</div>
+      <div><div class="brand-title">NovaMed</div><div class="brand-sub">Quality Data Platform</div></div>
+    </div>
+
+    <div class="search-trigger" onclick="openCmdk()">
+      <span>&#128269;</span><span>Search...</span><span class="kbd">&#8984;K</span>
+    </div>
+
+    <nav>
+      <button class="active" data-tab="overview"><span class="dot"></span>Overview</button>
+      <button data-tab="batches"><span class="dot"></span>Batches</button>
+      <button data-tab="suppliers"><span class="dot"></span>Suppliers</button>
+      <button data-tab="quarantine"><span class="dot"></span>Quarantine</button>
+      <button data-tab="actions"><span class="dot"></span>Log an Event</button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="api-link" href="/docs">API Reference <span>&rarr;</span></a>
+      <div class="status-line"><span class="status-dot"></span>Pipeline connected</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <section id="overview" class="tab active">
+      <div class="page-head">
+        <div><div class="page-title">Overview</div><div class="page-sub">Regulated life-sciences lakehouse &middot; bronze / silver / gold</div></div>
+      </div>
+
+      <div class="bento">
+        <div class="tile"><div class="label">Total Batches</div><div class="value" id="v-batches">&mdash;</div><div class="footnote" id="f-batches">&nbsp;</div></div>
+        <div class="tile"><div class="label">Suppliers</div><div class="value" id="v-suppliers">&mdash;</div><div class="footnote">Active vendors</div></div>
+        <div class="tile"><div class="label">Avg Supplier Pass Rate</div><div class="value" id="v-passrate">&mdash;</div><div class="footnote">Across all inspections</div></div>
+        <div class="tile"><div class="label">Open Deviations</div><div class="value" id="v-deviations">&mdash;</div><div class="footnote">Open + under investigation</div></div>
+      </div>
+      <div class="bento">
+        <div class="tile span-2 chart-tile">
+          <div id="donut-chart"></div>
+          <div class="donut-legend" id="donut-legend"></div>
+        </div>
+        <div class="tile span-2">
+          <div class="label" style="margin-bottom:14px">Batch pass rate distribution</div>
+          <div id="histogram"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="batches" class="tab">
+      <div class="page-head">
+        <div><div class="page-title">Batches</div><div class="page-sub">Quality summary per batch</div></div>
+        <div class="page-count" id="batch-count"></div>
+      </div>
+      <div class="toolbar">
+        <select id="batch-status-filter">
+          <option value="">All statuses</option>
+          <option>RELEASED</option><option>PENDING_REVIEW</option><option>ON_HOLD</option><option>REJECTED</option>
+        </select>
+        <input id="batch-min-pass" type="number" placeholder="Min pass rate %" style="width:150px">
+        <button class="btn secondary" onclick="loadBatches()">Filter</button>
+      </div>
+      <div class="card-table">
+        <table id="batch-table">
+          <thead><tr><th>Batch</th><th>Product</th><th>Status</th><th>Tests</th><th>Pass Rate</th><th>Open Deviations</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="suppliers" class="tab">
+      <div class="page-head"><div><div class="page-title">Suppliers</div><div class="page-sub">Inspection pass rates and defect totals</div></div></div>
+      <div class="card-table">
+        <table id="supplier-table">
+          <thead><tr><th>Supplier</th><th>Country</th><th>Inspections</th><th>Pass Rate</th><th>Defects</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="quarantine" class="tab">
+      <div class="page-head"><div><div class="page-title">Quarantine</div><div class="page-sub">Rejected records, tagged with the specific validation failure</div></div></div>
+      <div class="toolbar">
+        <select id="quarantine-table-select">
+          <option value="batches">batches</option><option value="lab_tests">lab_tests</option>
+          <option value="device_events">device_events</option><option value="quality_deviations">quality_deviations</option>
+          <option value="supplier_inspections">supplier_inspections</option><option value="document_metadata">document_metadata</option>
+        </select>
+        <button class="btn secondary" onclick="loadQuarantine()">Load</button>
+      </div>
+      <div id="quarantine-list"></div>
+    </section>
+
+    <section id="actions" class="tab">
+      <div class="page-head"><div><div class="page-title">Log an Event</div><div class="page-sub">Writes flow through the same validation rules as batch-loaded data</div></div></div>
+      <div class="grid-2">
+        <div class="form-panel">
+          <div class="ftitle">Open a quality deviation</div>
+          <label>Batch ID</label><input id="dev-batch-id" placeholder="BAT-00001">
+          <label>Severity</label>
+          <select id="dev-severity"><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select>
+          <label>Description</label><textarea id="dev-description" rows="3" placeholder="What happened?"></textarea>
+          <button class="btn" onclick="createDeviation()">Log Deviation</button>
+        </div>
+        <div class="form-panel">
+          <div class="ftitle">Log a device event</div>
+          <label>Device ID</label><input id="ev-device-id" placeholder="DEV-00001">
+          <label>Batch ID</label><input id="ev-batch-id" placeholder="BAT-00001">
+          <label>Event Type</label>
+          <select id="ev-type"><option>TEMPERATURE_ALERT</option><option>CALIBRATION_DUE</option><option>POWER_FAILURE</option><option>SENSOR_WARNING</option><option>CONNECTIVITY_LOSS</option></select>
+          <label>Severity</label>
+          <select id="ev-severity"><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select>
+          <button class="btn" onclick="createDeviceEvent()">Log Event</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="cmdk-overlay" id="cmdk">
+  <div class="cmdk-box">
+    <input class="cmdk-input" id="cmdk-input" placeholder="Jump to a section..." autocomplete="off">
+    <div class="cmdk-list" id="cmdk-list"></div>
   </div>
-  <a href="/docs">API Reference &rarr;</a>
-</header>
+</div>
 
-<nav>
-  <button class="active" data-tab="overview">Overview</button>
-  <button data-tab="batches">Batches</button>
-  <button data-tab="suppliers">Suppliers</button>
-  <button data-tab="quarantine">Quarantine</button>
-  <button data-tab="actions">Log an Event</button>
-</nav>
-
-<main>
-
-  <section id="overview" class="tab active">
-    <div class="cards" id="overview-cards"></div>
-    <div class="panel-title">Deviations by severity</div>
-    <table id="deviation-table">
-      <thead><tr><th>Severity</th><th>Status</th><th>Count</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <section id="batches" class="tab">
-    <div class="toolbar">
-      <select id="batch-status-filter">
-        <option value="">All statuses</option>
-        <option>RELEASED</option>
-        <option>PENDING_REVIEW</option>
-        <option>ON_HOLD</option>
-        <option>REJECTED</option>
-      </select>
-      <input id="batch-min-pass" type="number" placeholder="Min pass rate %" style="width:150px">
-      <button class="btn secondary" onclick="loadBatches()">Filter</button>
-      <span class="muted-small" id="batch-count"></span>
-    </div>
-    <table id="batch-table">
-      <thead><tr><th>Batch</th><th>Product</th><th>Status</th><th>Tests</th><th>Pass Rate</th><th>Open Deviations</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <section id="suppliers" class="tab">
-    <table id="supplier-table">
-      <thead><tr><th>Supplier</th><th>Country</th><th>Inspections</th><th>Pass Rate</th><th>Defects</th><th>Status</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <section id="quarantine" class="tab">
-    <div class="toolbar">
-      <select id="quarantine-table-select">
-        <option value="batches">batches</option>
-        <option value="lab_tests">lab_tests</option>
-        <option value="device_events">device_events</option>
-        <option value="quality_deviations">quality_deviations</option>
-        <option value="supplier_inspections">supplier_inspections</option>
-        <option value="document_metadata">document_metadata</option>
-      </select>
-      <button class="btn secondary" onclick="loadQuarantine()">Load</button>
-    </div>
-    <div id="quarantine-list"></div>
-  </section>
-
-  <section id="actions" class="tab">
-    <div class="grid-2">
-      <div class="form-panel">
-        <div class="panel-title">Open a quality deviation</div>
-        <label>Batch ID</label>
-        <input id="dev-batch-id" placeholder="BAT-00001">
-        <label>Severity</label>
-        <select id="dev-severity">
-          <option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option>
-        </select>
-        <label>Description</label>
-        <textarea id="dev-description" rows="3" placeholder="What happened?"></textarea>
-        <button class="btn" onclick="createDeviation()">Log Deviation</button>
-        <div class="msg" id="dev-msg"></div>
-      </div>
-
-      <div class="form-panel">
-        <div class="panel-title">Log a device event</div>
-        <label>Device ID</label>
-        <input id="ev-device-id" placeholder="DEV-00001">
-        <label>Batch ID</label>
-        <input id="ev-batch-id" placeholder="BAT-00001">
-        <label>Event Type</label>
-        <select id="ev-type">
-          <option>TEMPERATURE_ALERT</option><option>CALIBRATION_DUE</option>
-          <option>POWER_FAILURE</option><option>SENSOR_WARNING</option><option>CONNECTIVITY_LOSS</option>
-        </select>
-        <label>Severity</label>
-        <select id="ev-severity">
-          <option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option>
-        </select>
-        <button class="btn" onclick="createDeviceEvent()">Log Event</button>
-        <div class="msg" id="ev-msg"></div>
-      </div>
-    </div>
-    <p class="muted-small">Writes append to the source files. Run the pipeline (bronze &rarr; silver &rarr; gold) to see them reflected in Batches / Suppliers / Overview.</p>
-  </section>
-
-</main>
+<div class="toast-stack" id="toast-stack"></div>
 
 <script>
 const API = "";
+const COLORS = { LOW: "#34d399", MEDIUM: "#fbbf24", HIGH: "#fb7185", CRITICAL: "#f43f5e" };
 
-document.querySelectorAll("nav button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.tab).classList.add("active");
+document.querySelectorAll("nav button").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
+function switchTab(tab) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === tab));
+}
+function badge(v) { return `<span class="badge ${v}">${v}</span>`; }
+function emptyState(icon, text) { return `<div class="empty-state"><div class="icon">${icon}</div>${text}</div>`; }
+function toast(message, type = "ok") {
+  const stack = document.getElementById("toast-stack");
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.textContent = message;
+  stack.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(() => el.remove(), 300); }, 3500);
+}
+function animateValue(el, end, suffix = "") {
+  const startTime = performance.now();
+  function tick(now) {
+    const p = Math.min((now - startTime) / 700, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(end * eased) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function renderDonut(devRes) {
+  const bySeverity = {};
+  devRes.forEach(d => { bySeverity[d.severity] = (bySeverity[d.severity] || 0) + d.count; });
+  const order = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+  const total = Object.values(bySeverity).reduce((a, b) => a + b, 0) || 1;
+  let cumulative = 0;
+  const r = 50, cx = 58, cy = 58, sw = 16;
+  const circumference = 2 * Math.PI * r;
+
+  let circles = "";
+  order.forEach(sev => {
+    const val = bySeverity[sev] || 0;
+    const frac = val / total;
+    const dash = frac * circumference;
+    circles += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${COLORS[sev]}" stroke-width="${sw}"
+      stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-cumulative}" opacity="0.92"/>`;
+    cumulative += dash;
   });
-});
+  document.getElementById("donut-chart").innerHTML = `<svg width="116" height="116" viewBox="0 0 116 116" style="transform:rotate(-90deg)">${circles}</svg>`;
+  document.getElementById("donut-legend").innerHTML = order.map(sev => `
+    <div class="legend-row"><div class="legend-swatch" style="background:${COLORS[sev]}"></div><div class="legend-label">${sev}</div><div class="legend-val">${bySeverity[sev] || 0}</div></div>
+  `).join("");
+}
 
-function badge(value) {
-  return `<span class="badge ${value}">${value}</span>`;
+function renderHistogram(batches) {
+  const buckets = [0,0,0,0,0];
+  batches.forEach(b => {
+    const p = b.pass_rate_pct;
+    if (p < 60) buckets[0]++; else if (p < 70) buckets[1]++; else if (p < 80) buckets[2]++; else if (p < 90) buckets[3]++; else buckets[4]++;
+  });
+  const max = Math.max(...buckets, 1);
+  const labels = ["<60","60-70","70-80","80-90","90-100"];
+  document.getElementById("histogram").innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:9px;height:110px">
+      ${buckets.map((v,i) => `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end">
+          <div style="font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums">${v}</div>
+          <div style="width:100%;background:linear-gradient(180deg,var(--accent),#4f46e5);border-radius:6px 6px 2px 2px;height:${(v/max)*72}px;min-height:2px;transition:height .5s ease"></div>
+          <div style="font-size:10px;color:var(--muted)">${labels[i]}</div>
+        </div>`).join("")}
+    </div>`;
 }
 
 async function loadOverview() {
-  const [batchesRes, suppliersRes, devRes] = await Promise.all([
-    fetch(`${API}/batches?limit=1`).then(r => r.json()),
-    fetch(`${API}/suppliers`).then(r => r.json()),
-    fetch(`${API}/deviations/summary`).then(r => r.json()),
-  ]);
+  try {
+    const [batchesRes, suppliersRes, devRes] = await Promise.all([
+      fetch(`${API}/batches?limit=200`).then(r => r.json()),
+      fetch(`${API}/suppliers`).then(r => r.json()),
+      fetch(`${API}/deviations/summary`).then(r => r.json()),
+    ]);
+    const openDeviations = devRes.filter(d => d.status !== "CLOSED").reduce((s, d) => s + d.count, 0);
+    const avgPass = suppliersRes.length ? suppliersRes.reduce((s, x) => s + x.pass_rate_pct, 0) / suppliersRes.length : 0;
 
-  const openDeviations = devRes.filter(d => d.status !== "CLOSED").reduce((sum, d) => sum + d.count, 0);
-  const avgSupplierPass = suppliersRes.length
-    ? (suppliersRes.reduce((s, x) => s + x.pass_rate_pct, 0) / suppliersRes.length).toFixed(1)
-    : "-";
+    animateValue(document.getElementById("v-batches"), batchesRes.total);
+    document.getElementById("f-batches").textContent = `${batchesRes.results.filter(b=>b.batch_status==="RELEASED").length} released`;
+    animateValue(document.getElementById("v-suppliers"), suppliersRes.length);
+    animateValue(document.getElementById("v-passrate"), Math.round(avgPass*10)/10, "%");
+    animateValue(document.getElementById("v-deviations"), openDeviations);
 
-  document.getElementById("overview-cards").innerHTML = `
-    <div class="card"><div class="label">Total Batches</div><div class="value">${batchesRes.total}</div></div>
-    <div class="card"><div class="label">Suppliers</div><div class="value">${suppliersRes.length}</div></div>
-    <div class="card"><div class="label">Avg Supplier Pass Rate</div><div class="value">${avgSupplierPass}%</div></div>
-    <div class="card"><div class="label">Open Deviations</div><div class="value">${openDeviations}</div></div>
-  `;
-
-  const tbody = document.querySelector("#deviation-table tbody");
-  tbody.innerHTML = devRes.map(d => `
-    <tr><td>${badge(d.severity)}</td><td>${badge(d.status)}</td><td>${d.count}</td></tr>
-  `).join("");
+    renderDonut(devRes);
+    renderHistogram(batchesRes.results);
+  } catch (e) {
+    document.querySelector(".bento").innerHTML = emptyState("&#9888;", "Could not load overview. Run the pipeline first.");
+  }
 }
 
 async function loadBatches() {
@@ -293,88 +397,68 @@ async function loadBatches() {
   let url = `${API}/batches?limit=100`;
   if (status) url += `&status=${status}`;
   if (minPass) url += `&min_pass_rate=${minPass}`;
-
-  const data = await fetch(url).then(r => r.json());
-  document.getElementById("batch-count").textContent = `${data.total} batches`;
-
-  const tbody = document.querySelector("#batch-table tbody");
-  tbody.innerHTML = data.results.map(b => `
-    <tr>
-      <td>${b.batch_id}</td>
-      <td>${b.product_name}</td>
-      <td>${badge(b.batch_status)}</td>
-      <td>${b.passed_tests}/${b.total_tests}</td>
-      <td>${b.pass_rate_pct}%</td>
-      <td>${b.open_deviation_count}</td>
-    </tr>
-  `).join("");
+  try {
+    const data = await fetch(url).then(r => r.json());
+    document.getElementById("batch-count").textContent = `${data.total} total`;
+    const tbody = document.querySelector("#batch-table tbody");
+    tbody.innerHTML = data.results.length ? data.results.map(b => `
+      <tr>
+        <td>${b.batch_id}</td><td>${b.product_name}</td><td>${badge(b.batch_status)}</td>
+        <td>${b.passed_tests}/${b.total_tests}</td>
+        <td><div class="bar-cell"><span style="width:36px">${b.pass_rate_pct}%</span><div class="bar-track"><div class="bar-fill" data-w="${b.pass_rate_pct}"></div></div></div></td>
+        <td>${b.open_deviation_count}</td>
+      </tr>`).join("") : `<tr><td colspan="6">${emptyState("&#128269;", "No batches match this filter")}</td></tr>`;
+    requestAnimationFrame(() => document.querySelectorAll(".bar-fill[data-w]").forEach(el => el.style.width = el.dataset.w + "%"));
+  } catch (e) {
+    document.querySelector("#batch-table tbody").innerHTML = `<tr><td colspan="6">${emptyState("&#9888;", "Could not load batches")}</td></tr>`;
+  }
 }
 
 async function loadSuppliers() {
-  const data = await fetch(`${API}/suppliers`).then(r => r.json());
-  const tbody = document.querySelector("#supplier-table tbody");
-  tbody.innerHTML = data.map(s => `
-    <tr>
-      <td>${s.supplier_name}</td>
-      <td>${s.country}</td>
-      <td>${s.passed_inspections}/${s.total_inspections}</td>
-      <td>${s.pass_rate_pct}%</td>
-      <td>${s.total_defects}</td>
-      <td>${badge(s.latest_approval_status)}</td>
-    </tr>
-  `).join("");
+  try {
+    const data = await fetch(`${API}/suppliers`).then(r => r.json());
+    const tbody = document.querySelector("#supplier-table tbody");
+    tbody.innerHTML = data.length ? data.map(s => `
+      <tr>
+        <td>${s.supplier_name}</td><td>${s.country}</td><td>${s.passed_inspections}/${s.total_inspections}</td>
+        <td><div class="bar-cell"><span style="width:36px">${s.pass_rate_pct}%</span><div class="bar-track"><div class="bar-fill" data-w="${s.pass_rate_pct}"></div></div></div></td>
+        <td>${s.total_defects}</td><td>${badge(s.latest_approval_status)}</td>
+      </tr>`).join("") : `<tr><td colspan="6">${emptyState("&#128269;", "No suppliers found")}</td></tr>`;
+    requestAnimationFrame(() => document.querySelectorAll(".bar-fill[data-w]").forEach(el => el.style.width = el.dataset.w + "%"));
+  } catch (e) {
+    document.querySelector("#supplier-table tbody").innerHTML = `<tr><td colspan="6">${emptyState("&#9888;", "Could not load suppliers")}</td></tr>`;
+  }
 }
 
 async function loadQuarantine() {
   const table = document.getElementById("quarantine-table-select").value;
   const container = document.getElementById("quarantine-list");
-  container.innerHTML = "Loading...";
-
+  container.innerHTML = `<div class="card-table">${emptyState("&#8987;", "Loading...")}</div>`;
   try {
-    const data = await fetch(`${API}/quarantine/${table}`).then(r => {
-      if (!r.ok) throw new Error("No quarantine data");
-      return r.json();
-    });
-    if (data.length === 0) {
-      container.innerHTML = `<p class="muted-small">No quarantined records for ${table}.</p>`;
-      return;
-    }
-    container.innerHTML = data.map(item => `
-      <div class="quarantine-item">
-        <div class="reason">${item.reason}</div>
-        <pre>${JSON.stringify(item.record, null, 2)}</pre>
-      </div>
-    `).join("");
+    const data = await fetch(`${API}/quarantine/${table}`).then(r => { if (!r.ok) throw new Error(); return r.json(); });
+    container.innerHTML = data.length ? data.map(item => `
+      <div class="quarantine-item"><div class="reason">${item.reason}</div><pre>${JSON.stringify(item.record, null, 2)}</pre></div>
+    `).join("") : `<div class="card-table">${emptyState("&#9989;", `No quarantined records for ${table}`)}</div>`;
   } catch (e) {
-    container.innerHTML = `<p class="muted-small">Could not load quarantine data for ${table}.</p>`;
+    container.innerHTML = `<div class="card-table">${emptyState("&#9888;", `Could not load quarantine data for ${table}`)}</div>`;
   }
 }
 
 async function createDeviation() {
-  const msg = document.getElementById("dev-msg");
   const body = {
     batch_id: document.getElementById("dev-batch-id").value,
     severity: document.getElementById("dev-severity").value,
     description: document.getElementById("dev-description").value,
   };
   try {
-    const res = await fetch(`${API}/deviations`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const res = await fetch(`${API}/deviations`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Failed");
-    msg.className = "msg ok";
-    msg.textContent = `Created ${data.id}. ${data.message}`;
-  } catch (e) {
-    msg.className = "msg err";
-    msg.textContent = e.message;
-  }
+    toast(`Created ${data.id}`, "ok");
+  } catch (e) { toast(e.message, "err"); }
 }
 
 async function createDeviceEvent() {
-  const msg = document.getElementById("ev-msg");
   const body = {
     device_id: document.getElementById("ev-device-id").value,
     batch_id: document.getElementById("ev-batch-id").value,
@@ -382,20 +466,57 @@ async function createDeviceEvent() {
     severity: document.getElementById("ev-severity").value,
   };
   try {
-    const res = await fetch(`${API}/device-events`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const res = await fetch(`${API}/device-events`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Failed");
-    msg.className = "msg ok";
-    msg.textContent = `Created event ${data.id.slice(0,8)}... ${data.message}`;
-  } catch (e) {
-    msg.className = "msg err";
-    msg.textContent = e.message;
-  }
+    toast(`Logged event ${data.id.slice(0,8)}...`, "ok");
+  } catch (e) { toast(e.message, "err"); }
 }
+
+const CMDS = [
+  { label: "Overview", hint: "Go to", tab: "overview" },
+  { label: "Batches", hint: "Go to", tab: "batches" },
+  { label: "Suppliers", hint: "Go to", tab: "suppliers" },
+  { label: "Quarantine", hint: "Go to", tab: "quarantine" },
+  { label: "Log an Event", hint: "Go to", tab: "actions" },
+  { label: "API Reference", hint: "Open", url: "/docs" },
+];
+let cmdkSelected = 0;
+function openCmdk() {
+  document.getElementById("cmdk").classList.add("open");
+  document.getElementById("cmdk-input").value = "";
+  document.getElementById("cmdk-input").focus();
+  renderCmdk(CMDS);
+}
+function closeCmdk() { document.getElementById("cmdk").classList.remove("open"); }
+function renderCmdk(items) {
+  cmdkSelected = 0;
+  document.getElementById("cmdk-list").innerHTML = items.map((c, i) => `
+    <div class="cmdk-item ${i===0?'selected':''}" data-idx="${i}">${c.label}<span class="hint">${c.hint}</span></div>
+  `).join("") || `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No results</div>`;
+  document.querySelectorAll(".cmdk-item").forEach(el => el.addEventListener("click", () => runCmd(items[+el.dataset.idx])));
+}
+function runCmd(cmd) {
+  if (!cmd) return;
+  if (cmd.tab) switchTab(cmd.tab);
+  if (cmd.url) window.location.href = cmd.url;
+  closeCmdk();
+}
+document.getElementById("cmdk-input").addEventListener("input", (e) => {
+  const q = e.target.value.toLowerCase();
+  renderCmdk(CMDS.filter(c => c.label.toLowerCase().includes(q)));
+});
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); openCmdk(); }
+  if (e.key === "Escape") closeCmdk();
+  if (document.getElementById("cmdk").classList.contains("open")) {
+    const items = document.querySelectorAll(".cmdk-item");
+    if (e.key === "ArrowDown") { e.preventDefault(); cmdkSelected = Math.min(cmdkSelected+1, items.length-1); items.forEach((el,i)=>el.classList.toggle("selected", i===cmdkSelected)); }
+    if (e.key === "ArrowUp") { e.preventDefault(); cmdkSelected = Math.max(cmdkSelected-1, 0); items.forEach((el,i)=>el.classList.toggle("selected", i===cmdkSelected)); }
+    if (e.key === "Enter") { const filtered = CMDS.filter(c => c.label.toLowerCase().includes(document.getElementById("cmdk-input").value.toLowerCase())); runCmd(filtered[cmdkSelected]); }
+  }
+});
+document.getElementById("cmdk").addEventListener("click", (e) => { if (e.target.id === "cmdk") closeCmdk(); });
 
 loadOverview();
 loadBatches();
