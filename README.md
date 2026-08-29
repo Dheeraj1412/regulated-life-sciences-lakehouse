@@ -156,10 +156,10 @@ Designed to be portable to PySpark and Delta Lake for production-scale deploymen
 - [x] Automated test suite and CI pipeline (GitHub Actions)
 - [x] Config-driven data contracts and schema validation
 - [x] Containerization (Docker)
+- [x] REST API layer with interactive dashboard UI
 
 ### Stretch goals
 
-- [ ] REST API layer over the gold tables
 - [ ] Monitoring and quality trend tracking
 - [ ] Incremental processing
 - [ ] AWS S3 cross-cloud ingestion
