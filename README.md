@@ -70,6 +70,14 @@ In addition to the full-refresh pipeline described above, the platform includes 
 
 A demo (`src/demo_incremental.py`) proves the behavior end to end: an initial run establishes a checkpoint against all current rows, an immediate rerun correctly skips every table since nothing changed, then 15 new rows are appended to a source file to simulate new data arriving, and a final run processes only those 15 new rows, leaving every other table untouched. Checkpoints and a dedicated incremental audit log are written to `data/lakehouse/bronze/_checkpoints.json` and `_incremental_audit_log.parquet`.
 
+## Cross-Cloud Publishing (AWS S3)
+
+The gold layer and unified audit history can be published to Amazon S3, demonstrating that the pipeline output is not locked to local disk and can be consumed by external systems.
+
+`src/upload_to_s3.py` uploads each gold table and the audit history twice: once to a timestamped folder (`runs/<timestamp>/`) for point-in-time versioning, and once to a `latest/` folder that always reflects the current output, a common pattern for downstream consumers that either pin to a specific run or always read the newest data. `src/download_from_s3.py` proves the round trip: downloading the latest files back down and verifying row counts match exactly what was uploaded.
+
+Credentials are loaded from a local `.env` file (never committed; see `.env.example` for the required variables) using `python-dotenv`, and access is scoped to a dedicated IAM user rather than root account credentials.
+
 ## Architecture
 
 Source files (CSV/JSON, synthetic) feed into a bronze layer, which stores raw data plus ingestion metadata such as timestamp, source file, and run ID, and checks each file against a schema contract defined in config.yaml. From there, validation rules split each table into a silver layer (rows that pass every rule) and a quarantine layer (rows that fail, tagged with the reason). The silver layer feeds a gold layer of business-ready aggregated tables. Audit logs record the run ID, timestamps, row counts, and pass/fail status at every stage, and a unified audit view ties bronze, silver, and gold run history together.
@@ -175,7 +183,5 @@ Designed to be portable to PySpark and Delta Lake for production-scale deploymen
 - [x] REST API layer with interactive dashboard UI
 - [x] Statistical process control monitoring and anomaly detection
 - [x] Incremental processing with checkpoint tracking
+- [x] AWS S3 cross-cloud publishing with versioned and latest paths
 
-### Stretch goals
-
-- [ ] AWS S3 cross-cloud ingestion
